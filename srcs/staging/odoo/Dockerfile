@@ -2,10 +2,10 @@
 ARG ODOO_VERSION=18.0
 FROM odoo:18.0
 
-USER root
-
 # Aggiungi l'argomento per il token GitHub
 ARG GITHUB_TOKEN
+
+USER root
 
 # Installazione di dipendenze e clonazione di Odoo Enterprise (se richiesto)
 RUN apt-get update && apt-get install -y \

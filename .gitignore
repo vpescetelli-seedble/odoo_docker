@@ -1,2 +1,5 @@
 .env
 scripts/srcs
+addons/
+config/
+data/
