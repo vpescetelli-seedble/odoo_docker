@@ -10,8 +10,6 @@ services:
     volumes:
       - ./data/staging/odoo:/var/lib/odoo
       - ./addons/staging:/mnt/extra-addons
-    ports:
-      - "8069:8069"
     depends_on:
       db_staging:
         condition: service_healthy
@@ -58,8 +56,6 @@ services:
     volumes:
       - ./data/prod/odoo:/var/lib/odoo
       - ./addons/prod:/mnt/extra-addons
-    ports:
-      - "8070:8069"
     depends_on:
       db_production:
         condition: service_healthy
