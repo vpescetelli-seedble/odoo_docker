@@ -36,14 +36,14 @@ services:
       - staging
 
   nginx_staging:
-    build:
+    build: 
       context: ./srcs/staging/nginx
       dockerfile: Dockerfile
     ports:
       - "8080:80" # Porta per reverse proxy senza SSL
       - "8443:443" # Porta per reverse proxy con SSL (se abilitato)
-    volumes:
-      - ./config/staging/nginx:/etc/nginx/conf.d
+    depends_on:
+      - odoo_staging
     networks:
       - staging
 
@@ -90,8 +90,8 @@ services:
     ports:
       - "80:80" # Porta per reverse proxy senza SSL
       - "443:443" # Porta per reverse proxy con SSL (se abilitato)
-    volumes:
-      - ./config/prod/nginx:/etc/nginx/conf.d
+    depends_on:
+      - odoo_production
     networks:
       - prod
 
