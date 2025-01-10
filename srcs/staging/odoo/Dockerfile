@@ -1,6 +1,8 @@
 # Usa l'immagine base Odoo
-ARG ODOO_VERSION
-FROM odoo:${ODOO_VERSION}
+ARG ODOO_VERSION=18.0
+FROM odoo:18.0
+
+USER root
 
 # Aggiungi l'argomento per il token GitHub
 ARG GITHUB_TOKEN
@@ -9,9 +11,16 @@ ARG GITHUB_TOKEN
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    python3-pip && \
-    apt-get clean
+    python3-pip \
+    fonts-dejavu \
+    ttf-bitstream-vera \
+    gsfonts \
+    fontconfig \
+    xfonts-75dpi \
+    xfonts-base \
+    && apt-get clean
 
+USER odoo
 # Clona il repository di Odoo Enterprise
 RUN if [ -n "$GITHUB_TOKEN" ]; then \
         git clone -b ${ODOO_VERSION} https://$GITHUB_TOKEN@github.com/odoo/enterprise.git /mnt/enterprise; \

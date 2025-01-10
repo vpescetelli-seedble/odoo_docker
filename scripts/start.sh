@@ -18,7 +18,7 @@ generate_ssl_certificates() {
 # Funzione per avviare Docker Compose
 start_docker_compose() {
     echo "Avvio dei servizi Docker per $1"
-    docker-compose up -d
+    docker-compose up --build
 }
 
 # Controlla l'ambiente specificato
