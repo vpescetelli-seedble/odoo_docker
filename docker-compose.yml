@@ -1,0 +1,109 @@
+version: "3.9"
+
+services:
+  odoo_staging:
+    build:
+      context: ./srcs/staging/odoo
+      dockerfile: Dockerfile
+      args:
+        ODOO_VERSION: ${ODOO_VERSION} # Usato dal .env relativo
+    env_file:
+      - ./srcs/staging/odoo/.env
+    environment:
+      - DATABASE_HOST=db_staging
+      - DATABASE_PORT=5432
+      - DATABASE_USER=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ./data/staging/odoo:/var/lib/odoo
+      - ./addons/staging:/mnt/extra-addons
+    ports:
+      - "8069:8069"
+    networks:
+      - staging
+
+  db_staging:
+    image: postgres:14
+    container_name: db_staging
+    environment:
+      POSTGRES_USER: ${DB_USER_STAGING}
+      POSTGRES_PASSWORD: ${DB_PASS_STAGING}
+      POSTGRES_DB: ${DB_NAME_STAGING}
+    volumes:
+      - db_staging_data:/var/lib/postgresql/data
+    networks:
+      - staging
+
+  nginx_staging:
+    build:
+      context: ./srcs/staging/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Porta per reverse proxy senza SSL
+      - "8443:443" # Porta per reverse proxy con SSL (se abilitato)
+    volumes:
+      - ./config/staging/nginx:/etc/nginx/conf.d
+    networks:
+      - staging
+
+  odoo_production:
+    build:
+      context: ./srcs/prod/odoo
+      dockerfile: Dockerfile
+      args:
+        ODOO_VERSION: ${ODOO_VERSION} # Usato dal .env relativo
+    env_file:
+      - ./srcs/prod/odoo/.env
+    environment:
+      - DATABASE_HOST=db_production
+      - DATABASE_PORT=5432
+      - DATABASE_USER=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ./data/prod/odoo:/var/lib/odoo
+      - ./addons/prod:/mnt/extra-addons
+    ports:
+      - "8070:8069"
+    networks:
+      - prod
+
+  db_production:
+    image: postgres:14
+    container_name: db_production
+    environment:
+      POSTGRES_USER: ${DB_USER_PROD}
+      POSTGRES_PASSWORD: ${DB_PASS_PROD}
+      POSTGRES_DB: ${DB_NAME_PROD}
+    volumes:
+      - db_prod_data:/var/lib/postgresql/data
+    networks:
+      - prod
+
+  nginx_production:
+    build:
+      context: ./srcs/prod/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Porta per reverse proxy senza SSL
+      - "443:443" # Porta per reverse proxy con SSL (se abilitato)
+    volumes:
+      - ./config/prod/nginx:/etc/nginx/conf.d
+    networks:
+      - prod
+
+networks:
+  prod:
+    driver: bridge
+    name: prod_network # Nome specifico per facilitare la gestione
+  staging:
+    driver: bridge
+    name: staging_network # Nome specifico per facilitare la gestione
+
+
+volumes:
+  odoo_prod_data:
+  odoo_staging_data:
+  db_prod_data:
+  db_staging_data:
