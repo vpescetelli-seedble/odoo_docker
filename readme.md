@@ -16,7 +16,7 @@ Questa repository consente di configurare e avviare un'istanza di Odoo con suppo
 ### **1. Scarica la Repository**
 Clona la repository sul tuo server:
 ```bash
-git clone [<repository-url>](https://github.com/vpescetelli-seedble/odoo_docker.git)
+git clone https://github.com/vpescetelli-seedble/odoo_docker.git
 cd odoo_docker
 ```
 ### **2. Configura il Token GitHub (Versione Enterprise)**
