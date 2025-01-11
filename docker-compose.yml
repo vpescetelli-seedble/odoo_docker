@@ -101,12 +101,24 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3000"
     volumes:
       - ./srcs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./srcs/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./srcs/grafana/dashboards:/var/lib/grafana/dashboards
       - grafana_data:/var/lib/grafana
+    networks:
+      - prod
+      - staging
+  
+  nginx_grafana:
+    build:
+      context: ./srcs/grafana/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "7443:443"
+    depends_on:
+      - grafana
     networks:
       - prod
       - staging
