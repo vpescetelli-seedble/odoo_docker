@@ -100,6 +100,8 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    environment:
+      - GF_LIVE_ALLOWED_ORIGINS=https://localhost:7443
     ports:
       - "3000"
     volumes:
