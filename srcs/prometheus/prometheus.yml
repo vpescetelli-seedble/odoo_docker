@@ -1,0 +1,46 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          environment: 'monitoring'
+
+  - job_name: 'cadvisor'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          environment: 'monitoring'
+          service: 'docker_metrics'
+
+  - job_name: 'postgres_prod'
+    static_configs:
+      - targets: ['postgres_exporter_prod:9187']
+        labels:
+          environment: 'production'
+          service: 'postgres'
+
+  - job_name: 'postgres_staging'
+    static_configs:
+      - targets: ['postgres_exporter_staging:9187']
+        labels:
+          environment: 'staging'
+          service: 'postgres'
+
+  - job_name: 'nginx_exporter_prod'
+    static_configs:
+      - targets: ['nginx_prometheus_exporter:9113']
+        labels:
+          environment: 'production'
+          service: 'nginx'
+
+  - job_name: 'nginx_exporter_staging'
+    static_configs:
+      - targets: ['nginx_prometheus_exporter:9113']
+        labels:
+          environment: 'staging'
+          service: 'nginx'

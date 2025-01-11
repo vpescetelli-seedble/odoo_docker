@@ -1,4 +1,6 @@
 services:
+
+  # Odoo Staging
   odoo_staging:
     build:
       context: ./srcs/staging/odoo
@@ -45,6 +47,8 @@ services:
     networks:
       - staging
 
+
+  # Odoo Production
   odoo_production:
     build:
       context: ./srcs/prod/odoo
@@ -91,6 +95,94 @@ services:
     networks:
       - prod
 
+
+  # Monitoring
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./srcs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./srcs/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./srcs/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    networks:
+      - prod
+      - staging
+  
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./srcs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - prod
+      - staging
+
+  nginx_prod_prometheus_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_prod_prometheus_exporter
+    ports:
+      - "9113:9113"
+    command:
+      - -nginx.scrape-uri=http://nginx_production:80/nginx_status
+    depends_on:
+      - nginx_production
+    networks:
+      - prod
+
+  nginx_staging_prometheus_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    container_name: nginx_staging_prometheus_exporter
+    ports:
+      - "9114:9113"
+    command:
+      - -nginx.scrape-uri=http://nginx_staging:8080/nginx_status
+    depends_on:
+      - nginx_staging
+    networks:
+      - staging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    restart: unless-stopped
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    ports:
+      - "8081:8080"
+    networks:
+      - prod
+      - staging
+
+  postgres_exporter_prod:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter_prod
+    environment:
+      DATA_SOURCE_NAME: "postgresql://odoo:odoo_password@db_production:5432/postgres?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - prod
+
+  postgres_exporter_staging:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: postgres_exporter_staging
+    environment:
+      DATA_SOURCE_NAME: "postgresql://odoo:odoo_password@db_staging:5432/postgres?sslmode=disable"
+    ports:
+      - "9188:9187"
+    networks:
+      - staging
+
 networks:
   prod:
     driver: bridge
@@ -105,3 +197,5 @@ volumes:
   odoo_staging_data:
   db_prod_data:
   db_staging_data:
+  grafana_data:
+  prometheus_data:
