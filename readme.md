@@ -6,7 +6,7 @@ Questa repository consente di configurare e avviare un'istanza di Odoo con suppo
 
 ## **Prerequisiti**
 - Un server con **Docker** e **Docker Compose** installati.
-- Le porte **80**, **8080**, **443** e **8443** devono essere libere.
+- Le porte **80**, **8080**, **443**, **8443** e **7443** devono essere libere.
 - Accesso alla repository GitHub di **Odoo Enterprise** (per la versione Enterprise).
 
 ---
