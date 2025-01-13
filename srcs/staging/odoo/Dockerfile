@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y \
     xfonts-base \
     && apt-get clean
 
+USER odoo
+
 # Crea le directory necessarie con i permessi corretti
 RUN mkdir -p /var/lib/odoo/sessions /var/lib/odoo/addons/18.0 /mnt/extra-addons && \
     chown -R odoo:odoo /var/lib/odoo /mnt/extra-addons && \
@@ -28,7 +30,6 @@ RUN mkdir -p /var/lib/odoo/sessions /var/lib/odoo/addons/18.0 /mnt/extra-addons 
 COPY ./odoo.conf /etc/odoo/odoo.conf
 
 # Clona il repository di Odoo Enterprise (se richiesto)
-USER odoo
 RUN if [ -n "$GITHUB_TOKEN" ]; then \
         git clone -b ${ODOO_VERSION} https://$GITHUB_TOKEN@github.com/odoo/enterprise.git /mnt/enterprise; \
     fi
