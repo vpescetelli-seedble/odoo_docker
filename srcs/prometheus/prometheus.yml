@@ -9,7 +9,7 @@ scrape_configs:
         labels:
           environment: 'monitoring'
 
-  - job_name: 'cadvisor'
+  - job_name: 'Docker metrics'
     scrape_interval: 30s
     static_configs:
       - targets: ['cadvisor:8080']
@@ -31,16 +31,16 @@ scrape_configs:
           environment: 'staging'
           service: 'postgres'
 
-  - job_name: 'nginx_exporter_prod'
+  - job_name: 'nginx_production'
     static_configs:
-      - targets: ['nginx_prometheus_exporter:9113']
+      - targets: ['nginx_prod_prometheus_exporter:9113']
         labels:
           environment: 'production'
           service: 'nginx'
 
-  - job_name: 'nginx_exporter_staging'
+  - job_name: 'nginx_staging'
     static_configs:
-      - targets: ['nginx_prometheus_exporter:9113']
+      - targets: ['nginx_staging_prometheus_exporter:9113']
         labels:
           environment: 'staging'
           service: 'nginx'
