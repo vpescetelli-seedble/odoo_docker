@@ -1,4 +1,6 @@
 services:
+
+  # Odoo Staging
   odoo_staging:
     build:
       context: ./srcs/staging/odoo
@@ -8,8 +10,7 @@ services:
     env_file:
       - ./srcs/staging/odoo/.env
     volumes:
-      - ./data/staging/odoo:/var/lib/odoo
-      - ./addons/staging:/mnt/extra-addons
+      - odoo_staging_data:/usr/lib/python3/dist-packages/odoo/addons
     depends_on:
       db_staging:
         condition: service_healthy
@@ -45,6 +46,8 @@ services:
     networks:
       - staging
 
+
+  # Odoo Production
   odoo_production:
     build:
       context: ./srcs/prod/odoo
@@ -54,8 +57,7 @@ services:
     env_file:
       - ./srcs/prod/odoo/.env
     volumes:
-      - ./data/prod/odoo:/var/lib/odoo
-      - ./addons/prod:/mnt/extra-addons
+      - odoo_prod_data:/usr/lib/python3/dist-packages/odoo/addons
     depends_on:
       db_production:
         condition: service_healthy
@@ -102,6 +104,26 @@ networks:
 
 volumes:
   odoo_prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/odoo/prod
   odoo_staging_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/odoo/staging
   db_prod_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/db/prod
   db_staging_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/db/staging
