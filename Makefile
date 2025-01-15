@@ -10,7 +10,7 @@ db_staging_data := ./data/db/staging
 .PHONY: all up down clean create-folders start stop restart
 
 # Target principale
-all: create-folders up
+all: install-requirements up
 
 # Avvia i servizi definiti nel docker-compose
 up:
@@ -20,6 +20,9 @@ up:
 # associati al docker-compose
 down:
 	docker-compose -f $(docker_compose_file) down
+
+install-requirements:
+	sudo apt-get install docker.io docker-compose wkhtmltopdf -y
 
 # Crea le cartelle necessarie per i volumi se non esistono
 create-folders:
