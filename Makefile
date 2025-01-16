@@ -2,19 +2,19 @@
 docker_compose_file := docker-compose.yml
 
 # Percorsi per i volumi
-odoo_prod_data := ./data/odoo/prod
-odoo_staging_data := ./data/odoo/staging
+odoo_prod_data := ./addons/production/extra-addons
+odoo_staging_data := ./addons/staging/extra-addons
 db_prod_data := ./data/db/prod
 db_staging_data := ./data/db/staging
 
 .PHONY: all up down clean create-folders start stop restart
 
 # Target principale
-all: install-requirements up
+init: create-folders install-requirements up
 
 # Avvia i servizi definiti nel docker-compose
 up:
-	docker-compose -f $(docker_compose_file) up --build -d
+	docker-compose -f $(docker_compose_file) up --build
 
 # Ferma e rimuove i container, le reti e i volumi
 # associati al docker-compose
@@ -22,7 +22,7 @@ down:
 	docker-compose -f $(docker_compose_file) down
 
 install-requirements:
-	sudo apt-get install docker.io docker-compose wkhtmltopdf -y
+	sudo apt-get install docker.io docker-compose -y
 
 # Crea le cartelle necessarie per i volumi se non esistono
 create-folders:

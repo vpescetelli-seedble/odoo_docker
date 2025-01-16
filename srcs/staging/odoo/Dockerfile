@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     fontconfig \
     xfonts-75dpi \
     xfonts-base \
+    wkhtmltopdf \
     && apt-get clean
 
 
