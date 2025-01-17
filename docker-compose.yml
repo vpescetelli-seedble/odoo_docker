@@ -10,8 +10,8 @@ services:
     env_file:
       - ./srcs/staging/odoo/.env
     volumes:
-      # - ./odoo-data/staging/filestore:/var/lib/odoo
-      # - ./odoo-data/staging/config:/etc/odoo
+      - odoo-data_staging_filestore:/var/lib/odoo
+      - odoo-data_staging_config:/etc/odoo
       - odoo_staging_data:/mnt/extra-addons
     depends_on:
       db_staging:
@@ -121,3 +121,5 @@ volumes:
       o: bind
   db_prod_data:
   db_staging_data:
+  odoo-data_staging_config:
+  odoo-data_staging_filestore:
