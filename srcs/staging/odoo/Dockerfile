@@ -25,7 +25,7 @@ USER odoo
 # Crea le directory necessarie con i permessi corretti
 RUN mkdir -p /var/lib/odoo/sessions /var/lib/odoo/addons/18.0 /mnt/extra-addons && \
     chown -R odoo:odoo /var/lib/odoo /mnt/extra-addons && \
-    chmod -R 700 /var/lib/odoo /mnt/extra-addons
+    chmod -R 755 /var/lib/odoo /mnt/extra-addons
 
 # Copia file di configurazione
 COPY ./odoo.conf /etc/odoo/odoo.conf
