@@ -25,9 +25,21 @@ update_docker_compose() {
 update_odoo_dockerfile() {
     local dockerfile_path=$1
     local odoo_version=$2
+    local github_token=$3
     
     if [ -f "$dockerfile_path" ]; then
+        # Aggiorna la versione di Odoo
         perl -i -pe "s/FROM odoo:18.0/FROM odoo:${odoo_version}/g" "$dockerfile_path"
+        
+        # Aggiungi l'argomento GITHUB_TOKEN se non esiste
+        if ! grep -q "ARG GITHUB_TOKEN" "$dockerfile_path"; then
+            # Cerca la riga "FROM odoo" e inserisci l'ARG dopo
+            perl -i -pe "s/(FROM odoo:.+\n)/# Usa l'immagine base Odoo\n\1\n# Aggiungi l'argomento per il token GitHub\nARG GITHUB_TOKEN=${github_token}\n\n/" "$dockerfile_path";
+        else
+            # Se ARG GITHUB_TOKEN esiste già, aggiorna il suo valore
+            perl -i -pe "s/ARG GITHUB_TOKEN=.*/ARG GITHUB_TOKEN=${github_token}/" "$dockerfile_path";
+        fi
+        
         echo "Dockerfile aggiornato: $dockerfile_path"
     else
         echo -e "${RED}Errore: Dockerfile non trovato: $dockerfile_path${NC}"
@@ -73,7 +85,7 @@ GITHUB_TOKEN=$github_token
 EOF
 
     # Aggiorna il Dockerfile di Odoo
-    if update_odoo_dockerfile "${dockerfile_path}" "${odoo_version}"; then
+    if update_odoo_dockerfile "${dockerfile_path}" "${odoo_version}" "${github_token}"; then
         # Aggiorna il docker-compose.yml
         update_docker_compose "${environment}" "${db_user}" "${db_password}" "${db_name}"
         echo -e "${GREEN}File .env creato e configurazioni aggiornate per $environment${NC}"
@@ -158,6 +170,16 @@ cat << "EOF"
  ╚═════╝ ╚═════╝  ╚═════╝  ╚═════╝     ╚═════╝  ╚═════╝  ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
 EOF
 echo -e "${NC}"
+
+echo -e "${RED}###############################################################################
+#                               WARNING!                                        #
+#                                                                             #
+# To install Odoo Enterprise, you need to create an access token through      #
+# GitHub.                                                                     #
+#                                                                             #
+# To generate the code, go to:                                               #
+# Settings -> Developer Settings -> Access Tokens -> Generate token           #
+###############################################################################${NC}"
 
 # Main script
 echo -e "${BLUE}Inizializzazione configurazione Odoo${NC}"
