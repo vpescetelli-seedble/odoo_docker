@@ -40,9 +40,9 @@ update_odoo_dockerfile() {
             perl -i -pe "s/ARG GITHUB_TOKEN=.*/ARG GITHUB_TOKEN=${github_token}/" "$dockerfile_path";
         fi
         
-        echo "Dockerfile aggiornato: $dockerfile_path"
+        echo "Dockerfile update: $dockerfile_path"
     else
-        echo -e "${RED}Errore: Dockerfile non trovato: $dockerfile_path${NC}"
+        echo -e "${RED}Error: Dockerfile not found: $dockerfile_path${NC}"
         return 1
     fi
 }
@@ -53,23 +53,23 @@ create_env_file() {
     local environment=$2
     local dockerfile_path=$3
 
-    echo "Configurazione ambiente ${environment}..."
+    echo "Environment configuration ${environment}..."
     
     # Input per le variabili
-    read -p "Inserisci la versione di Odoo (default: 18.0): " odoo_version
+    read -p "Enter the Odoo version (default: 18.0): " odoo_version
     odoo_version=${odoo_version:-18.0}
     
-    read -p "Inserisci il nome utente del database (default: odoo): " db_user
+    read -p "Enter the database username (default: odoo): " db_user
     db_user=${db_user:-odoo}
     
-    read -s -p "Inserisci la password del database: " db_password
+    read -s -p "Enter the database password: " db_password
     echo
     db_password=${db_password:-odoo_password}
     
-    read -p "Inserisci il nome del database (default: postgres): " db_name
+    read -p "Enter the database host name (default: postgres): " db_name
     db_name=${db_name:-postgres}
     
-    read -s -p "Inserisci il GitHub token (opzionale): " github_token
+    read -s -p "Enter the GitHub token (optional): " github_token
     echo
 
     # Assicurati che la directory esista
@@ -88,9 +88,9 @@ EOF
     if update_odoo_dockerfile "${dockerfile_path}" "${odoo_version}" "${github_token}"; then
         # Aggiorna il docker-compose.yml
         update_docker_compose "${environment}" "${db_user}" "${db_password}" "${db_name}"
-        echo -e "${GREEN}File .env creato e configurazioni aggiornate per $environment${NC}"
+        echo -e "${GREEN}.env file created and configurations updated for $environment${NC}"
     else
-        echo -e "${RED}Errore durante l'aggiornamento delle configurazioni per $environment${NC}"
+        echo -e "${RED}Error while updating configurations for $environment${NC}"
     fi
     
     # Esporta le variabili per uso successivo
@@ -109,7 +109,7 @@ configure_odoo() {
     local db_password=$6
     local db_name=$7
 
-    echo "Configurazione Odoo per ${environment}..."
+    echo "Odoo configuration for ${environment}..."
     
     local default_workers
     if [ "$environment" = "Production" ]; then
@@ -118,7 +118,7 @@ configure_odoo() {
         default_workers=4
     fi
     
-    read -p "Numero di workers (default: $default_workers): " workers
+    read -p "Numbers of workers (default: $default_workers): " workers
     workers=${workers:-$default_workers}
 
     local log_level
@@ -156,9 +156,10 @@ EOF
         echo "proxy_mode = True" >> "${conf_path}"
     fi
 
-    echo -e "${GREEN}File odoo.conf configurato per $environment${NC}"
+    echo -e "${GREEN}odoo.conf file configured for $environment${NC}"
 }
 
+clear 
 # ASCII Art
 echo -e "${BLUE}"
 cat << "EOF"
@@ -182,10 +183,35 @@ echo -e "${RED}#################################################################
 ###############################################################################${NC}"
 
 # Main script
-echo -e "${BLUE}Inizializzazione configurazione Odoo${NC}"
+echo -e "${BLUE}Odoo configuration initialization
+
+${NC}"
+
+# Richiedi conferma per proseguire
+while true; do
+    read -p "Do you want to proceed with the configuration? [Y/n] " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) echo "Configuration aborted."; exit;;
+        * ) echo "Please answer yes (Y) or no (n).";;
+    esac
+done
 
 # Backup del docker-compose.yml originale
 cp docker-compose.yml docker-compose.yml.backup
+
+# Configurazione Production
+clear
+echo -e "${BLUE}"
+cat << "EOF"
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                   STAGING ENVIRONMENT CONFIGURATION                       ║
+║                                                                           ║
+║               Preparation of the development environment                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+EOF
+echo -e "${NC}"
+
 
 # Configurazione Staging
 create_env_file "./srcs/staging/odoo/.env" "Staging" "./srcs/staging/odoo/Dockerfile"
@@ -194,10 +220,54 @@ configure_odoo "./srcs/staging/odoo/odoo.conf" "Staging" "db_staging" "8069" "$D
 echo -e "${GREEN}Configurazione Staging completata${NC}"
 
 # Configurazione Production
+clear
+echo -e "${BLUE}"
+cat << "EOF"
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                   PRODUCTION ENVIRONMENT CONFIGURATION                    ║
+║                                                                           ║
+║                Preparation of the production environment                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+EOF
+echo -e "${NC}"
+
 create_env_file "./srcs/prod/odoo/.env" "Production" "./srcs/prod/odoo/Dockerfile"
 configure_odoo "./srcs/prod/odoo/odoo.conf" "Production" "db_production" "8070" "$DB_USER" "$DB_PASSWORD" "$DB_NAME"
 
-echo -e "${GREEN}Configurazione Production completata${NC}"
+echo -e "${GREEN}Configuration Production completed${NC}"
 
-echo -e "${BLUE}Configurazione completata${NC}"
-echo -e "${GREEN}Backup del docker-compose.yml salvato come docker-compose.yml.backup${NC}"
+echo -e "${BLUE}Configuration completed${NC}"
+echo -e "${GREEN}Backup of docker-compose.yml saved as docker-compose.yml.backup${NC}"
+
+sleep 2
+clear 
+# New completion message with ASCII art
+echo -e "${GREEN}"
+cat << "EOF"
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║             ____                   _                 _ _                   ║
+║            |  _ \    ___    ___  | |__    ___    __| | |                   ║
+║            | |_) |  / _ \  / __| | '_ \  / _ \  / _` | |                   ║
+║            |  _ <  | (_) | \__ \ | | | || (_) || (_| |_|                   ║
+║            |_| \_\  \___/  |___/ |_| |_| \___/  \__,_(_)                   ║
+║                                                                            ║
+║                Configuration completed successfully!                       ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+   🚀 Your Odoo environments are ready to launch!
+
+   ✓ Staging Environment  : http | Port 8080  --- https | Port 8443
+   ✓ Production Environment: http | Port 80 --- https | Port 443
+   ✓ Configuration files created and updated
+   ✓ Docker Compose backup saved
+
+   📝 Next steps:
+   1. Review your configuration files
+   2. Start your environment with make up
+   3. Access Odoo through your browser
+
+EOF
+echo -e "${NC}"
