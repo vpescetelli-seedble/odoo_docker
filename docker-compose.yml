@@ -43,6 +43,9 @@ services:
     ports:
       - "8080:80" # Porta per reverse proxy senza SSL
       - "8443:443" # Porta per reverse proxy con SSL (se abilitato)
+    volumes:
+      - letsencrypt_staging:/etc/letsencrypt
+      - letsencrypt_staging_lib:/var/lib/letsencrypt
     depends_on:
       - odoo_staging
     networks:
@@ -94,6 +97,9 @@ services:
       - "443:443" # Porta per reverse proxy con SSL (se abilitato)
     depends_on:
       - odoo_production
+    volumes:
+      - letsencrypt_prod:/etc/letsencrypt
+      - letsencrypt_prod_lib:/var/lib/letsencrypt
     networks:
       - prod
 
@@ -125,3 +131,7 @@ volumes:
   odoo-data_staging_filestore:
   odoo-data_prod_config:
   odoo-data_prod_filestore:
+  letsencrypt_staging:
+  letsencrypt_staging_lib:
+  letsencrypt_prod:
+  letsencrypt_prod_lib:

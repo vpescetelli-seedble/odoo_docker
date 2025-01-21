@@ -1,15 +1,19 @@
-# Usa l'immagine ufficiale di Nginx
 FROM nginx:latest
+
+# Installa Certbot e le dipendenze necessarie
+RUN apt-get update && \
+    apt-get install -y certbot python3-certbot-nginx && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copia la configurazione di Nginx
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 
-# Crea certificati SSL auto-firmati
-RUN mkdir -p /etc/nginx/ssl && \
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/nginx/ssl/staging.key \
-    -out /etc/nginx/ssl/staging.crt \
-    -subj "/CN=localhost"
+# Crea una directory per i certificati
+RUN mkdir -p /etc/nginx/ssl
 
-# Imposta il comando di avvio
+# Script di inizializzazione
+COPY ./init-letsencrypt.sh /docker-entrypoint.d/
+RUN chmod +x /docker-entrypoint.d/init-letsencrypt.sh
+
 CMD ["nginx", "-g", "daemon off;"]
