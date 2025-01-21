@@ -1,6 +1,9 @@
 # Nome del file docker-compose
 docker_compose_file := docker-compose.yml
 
+# Nome dello script di setup
+setup_script := setup.sh
+
 # Percorsi per i volumi
 odoo_prod_data := ./addons/production/extra-addons
 odoo_staging_data := ./addons/staging/extra-addons
@@ -10,7 +13,12 @@ db_staging_data := ./data/db/staging
 .PHONY: all up down clean create-folders start stop restart
 
 # Target principale
-init: create-folders install-requirements up
+init: create-folders install-requirements setup up
+
+# Target per il setup
+setup:
+	@chmod +x $(setup_script)
+	@./$(setup_script)
 
 # Avvia i servizi definiti nel docker-compose
 up:
@@ -60,3 +68,4 @@ restart:
 		exit 1; \
 	fi
 	docker-compose -f $(docker_compose_file) restart $(container)
+

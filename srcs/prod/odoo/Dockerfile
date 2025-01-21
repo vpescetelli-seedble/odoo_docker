@@ -1,8 +1,5 @@
 # Usa l'immagine base Odoo
-FROM odoo:18.0
-
-# Aggiungi l'argomento per il token GitHub
-ARG GITHUB_TOKEN
+FROM odoo:latest
 
 USER root
 
@@ -29,11 +26,14 @@ RUN mkdir -p /var/lib/odoo/sessions /var/lib/odoo/addons/18.0 /mnt/extra-addons 
 
 # Copia file di configurazione
 COPY ./odoo.conf /etc/odoo/odoo.conf
+USER root
 
 # Clona il repository di Odoo Enterprise (se richiesto)
 RUN if [ -n "$GITHUB_TOKEN" ]; then \
         git clone -b ${ODOO_VERSION} https://$GITHUB_TOKEN@github.com/odoo/enterprise.git /mnt/enterprise; \
     fi
+
+USER odoo
 
 # Imposta la directory dei moduli personalizzati
 VOLUME ["/mnt/extra-addons"]
