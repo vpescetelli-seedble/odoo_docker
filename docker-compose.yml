@@ -139,3 +139,7 @@ volumes:
   odoo-data_staging_filestore:
   odoo-data_prod_config:
   odoo-data_prod_filestore:
+  letsencrypt_staging:
+  letsencrypt_staging_lib:
+  # letsencrypt_prod:
+  # letsencrypt_prod_lib:
