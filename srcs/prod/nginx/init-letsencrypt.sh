@@ -1,7 +1,17 @@
 #!/bin/bash
 
-# Avvia nginx con i certificati esistenti
-nginx
+# Funzione per fermare nginx in modo sicuro
+stop_nginx() {
+    if [ -f /var/run/nginx.pid ]; then
+        kill $(cat /var/run/nginx.pid)
+        rm -f /var/run/nginx.pid
+        sleep 2
+    fi
+}
+
+# Avvia nginx inizialmente
+nginx -g 'daemon off;' &
+NGINX_PID=$!
 
 # Attendi che nginx sia avviato
 sleep 5
@@ -10,10 +20,11 @@ sleep 5
 certbot --nginx \
     --non-interactive \
     --agree-tos \
-    --email tuo@email.com \
+    --email valerio.pescetelli@seedble.com \
     --domains samir.seedble.com \
-    --keep-until-expiring \
-    --staging || true  # Il || true permette di continuare anche se certbot fallisce
 
-# Riavvia nginx in foreground
+# Ferma nginx
+stop_nginx
+
+# Riavvia nginx con la nuova configurazione
 exec nginx -g 'daemon off;'

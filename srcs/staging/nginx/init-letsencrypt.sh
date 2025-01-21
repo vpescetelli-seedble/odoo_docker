@@ -20,9 +20,8 @@ sleep 5
 certbot --nginx \
     --non-interactive \
     --agree-tos \
-    --email tuo@email.com \
+    --email valerio.pescetelli@seedble.com \
     --domains samir-staging.seedble.com \
-    --staging
 
 # Ferma nginx
 stop_nginx
