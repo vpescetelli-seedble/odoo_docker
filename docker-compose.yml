@@ -44,8 +44,12 @@ services:
       - "80:80"  # Necessario per Let's Encrypt
       - "443:443"  # Necessario per Let's Encrypt
     volumes:
-      - letsencrypt_staging:/etc/letsencrypt
-      - letsencrypt_staging_lib:/var/lib/letsencrypt
+      - type: volume
+        source: letsencrypt_staging
+        target: /etc/letsencrypt
+      - type: volume
+        source: letsencrypt_staging_lib
+        target: /var/lib/letsencrypt
     depends_on:
       - odoo_staging
     networks:
@@ -98,8 +102,12 @@ services:
   #   depends_on:
   #     - odoo_production
   #   volumes:
-  #     - letsencrypt_prod:/etc/letsencrypt
-  #     - letsencrypt_prod_lib:/var/lib/letsencrypt
+  #     - type: volume
+  #       source: letsencrypt_prod
+  #       target: /etc/letsencrypt
+  #     - type: volume
+  #       source: letsencrypt_prod_lib
+  #       target: /var/lib/letsencrypt
   #   networks:
   #     - prod
 
@@ -131,7 +139,3 @@ volumes:
   odoo-data_staging_filestore:
   odoo-data_prod_config:
   odoo-data_prod_filestore:
-  letsencrypt_staging:
-  letsencrypt_staging_lib:
-  # letsencrypt_prod:
-  # letsencrypt_prod_lib:
