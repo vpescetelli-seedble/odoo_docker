@@ -41,8 +41,8 @@ services:
       context: ./srcs/staging/nginx
       dockerfile: Dockerfile
     ports:
-      - "8080:80" # Porta per reverse proxy senza SSL
-      - "8443:443" # Porta per reverse proxy con SSL (se abilitato)
+      - "80:80"  # Necessario per Let's Encrypt
+      - "443:443"  # Necessario per Let's Encrypt
     volumes:
       - letsencrypt_staging:/etc/letsencrypt
       - letsencrypt_staging_lib:/var/lib/letsencrypt
@@ -88,20 +88,20 @@ services:
     networks:
       - prod
 
-  nginx_production:
-    build:
-      context: ./srcs/prod/nginx
-      dockerfile: Dockerfile
-    ports:
-      - "80:80" # Porta per reverse proxy senza SSL
-      - "443:443" # Porta per reverse proxy con SSL (se abilitato)
-    depends_on:
-      - odoo_production
-    volumes:
-      - letsencrypt_prod:/etc/letsencrypt
-      - letsencrypt_prod_lib:/var/lib/letsencrypt
-    networks:
-      - prod
+  # nginx_production:
+  #   build:
+  #     context: ./srcs/prod/nginx
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "80:80" # Porta per reverse proxy senza SSL
+  #     - "443:443" # Porta per reverse proxy con SSL (se abilitato)
+  #   depends_on:
+  #     - odoo_production
+  #   volumes:
+  #     - letsencrypt_prod:/etc/letsencrypt
+  #     - letsencrypt_prod_lib:/var/lib/letsencrypt
+  #   networks:
+  #     - prod
 
 networks:
   prod:
@@ -133,5 +133,5 @@ volumes:
   odoo-data_prod_filestore:
   letsencrypt_staging:
   letsencrypt_staging_lib:
-  letsencrypt_prod:
-  letsencrypt_prod_lib:
+  # letsencrypt_prod:
+  # letsencrypt_prod_lib:
