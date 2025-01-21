@@ -92,24 +92,24 @@ services:
     networks:
       - prod
 
-  # nginx_production:
-  #   build:
-  #     context: ./srcs/prod/nginx
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "80:80" # Porta per reverse proxy senza SSL
-  #     - "443:443" # Porta per reverse proxy con SSL (se abilitato)
-  #   depends_on:
-  #     - odoo_production
-  #   volumes:
-  #     - type: volume
-  #       source: letsencrypt_prod
-  #       target: /etc/letsencrypt
-  #     - type: volume
-  #       source: letsencrypt_prod_lib
-  #       target: /var/lib/letsencrypt
-  #   networks:
-  #     - prod
+  nginx_production:
+    build:
+      context: ./srcs/prod/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80" # Porta per reverse proxy senza SSL
+      - "443:443" # Porta per reverse proxy con SSL (se abilitato)
+    depends_on:
+      - odoo_production
+    volumes:
+      - type: volume
+        source: letsencrypt_prod
+        target: /etc/letsencrypt
+      - type: volume
+        source: letsencrypt_prod_lib
+        target: /var/lib/letsencrypt
+    networks:
+      - prod
 
 networks:
   prod:

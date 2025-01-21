@@ -14,7 +14,7 @@ RUN mkdir -p /etc/nginx/ssl && \
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/staging.key \
     -out /etc/nginx/ssl/staging.crt \
-    -subj "/CN=samir-staging.seedble.com"
+    -subj "/CN=dominio@dominio.com"
 
 # Crea uno script per ottenere i certificati Let's Encrypt
 COPY ./init-letsencrypt.sh /opt/

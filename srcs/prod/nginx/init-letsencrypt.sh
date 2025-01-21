@@ -20,8 +20,8 @@ sleep 5
 certbot --nginx \
     --non-interactive \
     --agree-tos \
-    --email valerio.pescetelli@seedble.com \
-    --domains samir.seedble.com \
+    --email tua@email.com \
+    --domains dominio@dominio.com \
 
 # Ferma nginx
 stop_nginx
