@@ -132,3 +132,28 @@ reset:
 		echo "✓ Production Odoo configuration restored"; \
 	fi
 	@echo "Reset completed!"
+
+# Backup delle configurazioni
+backup:
+	@echo "Creating backup of configuration files..."
+	@if [ -f "$(docker_compose_file)" ]; then \
+		cp $(docker_compose_file) $(docker_compose_file).backup; \
+		echo "✓ Docker Compose file backup created"; \
+	fi
+	@if [ -f "./srcs/staging/nginx/default.conf" ]; then \
+		cp ./srcs/staging/nginx/default.conf ./srcs/staging/nginx/default.conf.backup; \
+		echo "✓ Staging Nginx configuration backup created"; \
+	fi
+	@if [ -f "./srcs/prod/nginx/default.conf" ]; then \
+		cp ./srcs/prod/nginx/default.conf ./srcs/prod/nginx/default.conf.backup; \
+		echo "✓ Production Nginx configuration backup created"; \
+	fi
+	@if [ -f "./srcs/staging/odoo/odoo.conf" ]; then \
+		cp ./srcs/staging/odoo/odoo.conf ./srcs/staging/odoo/odoo.conf.backup; \
+		echo "✓ Staging Odoo configuration backup created"; \
+	fi
+	@if [ -f "./srcs/prod/odoo/odoo.conf" ]; then \
+		cp ./srcs/prod/odoo/odoo.conf ./srcs/prod/odoo/odoo.conf.backup; \
+		echo "✓ Production Odoo configuration backup created"; \
+	fi
+	@echo "Backup completed!"

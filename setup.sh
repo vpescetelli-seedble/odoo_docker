@@ -54,6 +54,7 @@ initialize_odoo_db() {
     local max_retries=30
     local retries=0
     
+    clear
     echo "Initializing Odoo database for ${environment}..."
     
     # Determina la porta esterna in base all'ambiente
@@ -248,9 +249,10 @@ deploy_environments() {
     fi
     
     # Attendi che i servizi siano pronti
+    echo -e "${GREEN}Deployment completed successfully${NC}"
+    echo -e "${BLUE}Waiting for services to be ready...${NC}"
     sleep 10
     
-    echo -e "${GREEN}Deployment completed successfully${NC}"
     return 0
 }
 
@@ -327,14 +329,12 @@ map \$http_upgrade \$connection_upgrade {
     ''      close;
 }
 
+# Configurazione iniziale HTTP per tutti i casi
 server {
     listen 80;
     server_name ${domain};
-EOF
 
-    if [ "$ssl_type" = "lets_encrypt" ]; then
-        cat >> "$conf_path" << EOF
-    
+    # Configurazione per Let's Encrypt ACME challenge
     location /.well-known/acme-challenge/ {
         root /var/www/html;
     }
@@ -342,34 +342,27 @@ EOF
     location / {
         return 301 https://\$host\$request_uri;
     }
-EOF
-    fi
-
-    cat >> "$conf_path" << EOF
 }
 
+# Configurazione HTTPS
 server {
     listen 443 ssl;
     server_name ${domain};
-    
-    # SSL configuration
-EOF
 
-    if [ "$ssl_type" = "lets_encrypt" ]; then
-        cat >> "$conf_path" << EOF
-    ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;
-EOF
-    else
-        cat >> "$conf_path" << EOF
+    # Usiamo sempre inizialmente i certificati self-signed
     ssl_certificate /etc/nginx/ssl/${env}.crt;
     ssl_certificate_key /etc/nginx/ssl/${env}.key;
-EOF
-    fi
-
-    # Aggiungi il resto della configurazione standard
-    cat >> "$conf_path" << EOF
     
+    # Configurazione SSL
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_tickets off;
+
+    # Configurazione proxy moderna
+    proxy_read_timeout 720s;
+    proxy_connect_timeout 720s;
+    proxy_send_timeout 720s;
+
     location / {
         proxy_pass http://odoo;
         proxy_set_header Host \$host;

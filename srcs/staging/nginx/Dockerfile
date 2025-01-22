@@ -1,6 +1,6 @@
 FROM nginx:latest
 
-ARG ENVIRONMENT=production
+ARG ENVIRONMENT=staging
 ARG DOMAIN_NAME=localhost
 ARG USE_LETS_ENCRYPT=false
 ARG LE_EMAIL=""
