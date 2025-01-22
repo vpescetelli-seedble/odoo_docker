@@ -10,10 +10,10 @@ odoo_staging_data := ./addons/staging/extra-addons
 db_prod_data := ./data/db/prod
 db_staging_data := ./data/db/staging
 
-.PHONY: all up down clean create-folders start stop restart
+.PHONY: all up down clean create-folders start stop restart init setup install-requirements
 
 # Target principale
-init: create-folders install-requirements setup up
+init: create-folders install-requirements setup
 
 # Target per il setup
 setup:
@@ -22,33 +22,44 @@ setup:
 
 # Avvia i servizi definiti nel docker-compose
 up:
-	docker-compose -f $(docker_compose_file) up --build
+	docker-compose -f $(docker_compose_file) up --build -d
+
+# Avvia i servizi in modalità detached con build
+deploy:
+	docker-compose -f $(docker_compose_file) up --build -d
 
 # Ferma e rimuove i container, le reti e i volumi
-# associati al docker-compose
 down:
 	docker-compose -f $(docker_compose_file) down
 
+# Installa i requisiti necessari
 install-requirements:
-	sudo apt-get install docker.io docker-compose -y
+	@echo "Installing Docker and Docker Compose..."
+	@if ! command -v docker &> /dev/null; then \
+		sudo apt-get update; \
+		sudo apt-get install docker.io docker-compose -y; \
+	fi
+	@echo "Requirements installed successfully."
 
-# Crea le cartelle necessarie per i volumi se non esistono
+# Crea le cartelle necessarie per i volumi
 create-folders:
 	@mkdir -p $(odoo_prod_data)
 	@mkdir -p $(odoo_staging_data)
 	@mkdir -p $(db_prod_data)
 	@mkdir -p $(db_staging_data)
-	@echo "Cartelle per i volumi create (se non esistevano)."
+	@echo "Volume folders created successfully."
 
-# Rimuove tutte le cartelle di dati
+# Pulisce completamente l'ambiente
 clean:
-	rm -rf $(odoo_prod_data) $(odoo_staging_data) $(db_prod_data) $(db_staging_data)
-	@echo "Cartelle dei volumi rimosse."
+	@echo "Cleaning up the environment..."
+	@docker-compose -f $(docker_compose_file) down -v
+	@rm -rf $(odoo_prod_data)/* $(odoo_staging_data)/* $(db_prod_data)/* $(db_staging_data)/*
+	@echo "Environment cleaned successfully."
 
 # Avvia un singolo container
 start:
 	@if [ -z "$(container)" ]; then \
-		echo "Specificare un container con 'make start container=<nome-container>'"; \
+		echo "Please specify a container with 'make start container=<container-name>'"; \
 		exit 1; \
 	fi
 	docker-compose -f $(docker_compose_file) start $(container)
@@ -56,7 +67,7 @@ start:
 # Ferma un singolo container
 stop:
 	@if [ -z "$(container)" ]; then \
-		echo "Specificare un container con 'make stop container=<nome-container>'"; \
+		echo "Please specify a container with 'make stop container=<container-name>'"; \
 		exit 1; \
 	fi
 	docker-compose -f $(docker_compose_file) stop $(container)
@@ -64,8 +75,33 @@ stop:
 # Riavvia un singolo container
 restart:
 	@if [ -z "$(container)" ]; then \
-		echo "Specificare un container con 'make restart container=<nome-container>'"; \
+		echo "Please specify a container with 'make restart container=<container-name>'"; \
 		exit 1; \
 	fi
 	docker-compose -f $(docker_compose_file) restart $(container)
 
+# Mostra i log dei container
+logs:
+	@if [ -z "$(container)" ]; then \
+		docker-compose -f $(docker_compose_file) logs -f; \
+	else \
+		docker-compose -f $(docker_compose_file) logs -f $(container); \
+	fi
+
+# Rebuild e restart dei container
+rebuild:
+	@docker-compose -f $(docker_compose_file) up --build -d --force-recreate
+
+
+# Abilita Let's Encrypt per staging
+enable-ssl-staging:
+	@docker-compose exec -e USE_LETS_ENCRYPT=true nginx_staging /init-ssl.sh
+
+# Abilita Let's Encrypt per production
+enable-ssl-prod:
+	@docker-compose exec -e USE_LETS_ENCRYPT=true nginx_production /init-ssl.sh
+
+# Rinnova certificati Let's Encrypt
+renew-ssl:
+	@docker-compose exec nginx_staging certbot renew
+	@docker-compose exec nginx_production certbot renew

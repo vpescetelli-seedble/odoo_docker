@@ -1,5 +1,10 @@
 # Usa l'immagine base Odoo
+# Use Odoo base image
 FROM odoo:latest
+
+# Add GitHub token argument
+ARG GITHUB_TOKEN=
+
 
 USER root
 
