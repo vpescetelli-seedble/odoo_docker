@@ -50,15 +50,26 @@ update_odoo_dockerfile() {
 # Funzione per inizializzare il database Odoo
 initialize_odoo_db() {
     local environment=$1
-    local port=$2
+    local internal_port=$2
     local max_retries=30
     local retries=0
     
     echo "Initializing Odoo database for ${environment}..."
     
+    # Determina la porta esterna in base all'ambiente
+    local external_port
+    if [ "$environment" = "Production" ]; then
+        external_port="80"
+    else
+        external_port="8080"
+    fi
+    
+    # Converti environment in minuscolo
+    local env_lower=$(to_lower "$environment")
+    
     # Attendi che il servizio Odoo sia disponibile
     echo "Waiting for Odoo service to be ready..."
-    while ! curl -s "http://localhost:${port}/web" > /dev/null; do
+    while ! curl -s "http://localhost:${external_port}/web" > /dev/null; do
         sleep 5
         retries=$((retries + 1))
         if [ $retries -ge $max_retries ]; then
@@ -68,17 +79,17 @@ initialize_odoo_db() {
         echo "Waiting for Odoo (attempt $retries of $max_retries)..."
     done
     
-    # Crea il database
+    # Crea il database usando la porta esterna
     curl -X POST \
         -F "master_pwd=${ADMIN_PASSWORD}" \
-        -F "name=${DB_NAME}_${environment,,}" \
+        -F "name=${DB_NAME}_${env_lower}" \
         -F "login=admin" \
         -F "password=admin" \
         -F "email=${ADMIN_EMAIL}" \
         -F "phone=" \
         -F "lang=en_US" \
         -F "country_code=IT" \
-        "http://localhost:${port}/web/database/create"
+        "http://localhost:${external_port}/web/database/create"
         
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}Database initialization completed for $environment${NC}"
@@ -225,6 +236,7 @@ EOF
 
 # Funzione per il deployment degli ambienti
 deploy_environments() {
+    clear
     echo -e "${BLUE}Starting deployment process...${NC}"
     
     # Build e avvio dei container
@@ -236,7 +248,7 @@ deploy_environments() {
     fi
     
     # Attendi che i servizi siano pronti
-    sleep 30
+    sleep 10
     
     echo -e "${GREEN}Deployment completed successfully${NC}"
     return 0
@@ -247,11 +259,10 @@ deploy_environments() {
 # Funzione per la configurazione SSL
 configure_ssl() {
     local environment=$1
-    local env_lowercase=$(echo "$environment" | tr '[:upper:]' '[:lower:]')
+    local env_lowercase=$(to_lower "$environment")
     
     echo -e "${BLUE}SSL Configuration for ${environment}${NC}"
     
-    # Chiedi il tipo di SSL
     while true; do
         read -p "Do you want to use Let's Encrypt for SSL? (y/n): " use_lets_encrypt
         case $use_lets_encrypt in
@@ -265,6 +276,7 @@ configure_ssl() {
 USE_LETS_ENCRYPT=true
 DOMAIN_NAME=$domain_name
 LE_EMAIL=$le_email
+ENVIRONMENT=$env_lowercase
 EOF
                 
                 # Aggiorna nginx.conf
@@ -275,7 +287,11 @@ EOF
                 # Usa certificati self-signed
                 cat > "./srcs/${env_lowercase}/nginx/.env" << EOF
 USE_LETS_ENCRYPT=false
+DOMAIN_NAME=localhost
+ENVIRONMENT=$env_lowercase
 EOF
+                
+                # Aggiorna nginx.conf
                 update_nginx_conf "${env_lowercase}" "localhost" "self_signed"
                 break
                 ;;
@@ -391,12 +407,12 @@ EOF
 echo -e "${NC}"
 
 echo -e "${RED}###############################################################################
-#                               WARNING!                                        #
+#                               WARNING!                                      #
 #                                                                             #
 # To install Odoo Enterprise, you need to create an access token through      #
 # GitHub.                                                                     #
 #                                                                             #
-# To generate the code, go to:                                               #
+# To generate the code, go to:                                                #
 # Settings -> Developer Settings -> Access Tokens -> Generate token           #
 ###############################################################################${NC}"
 
@@ -421,9 +437,9 @@ clear
 echo -e "${BLUE}"
 cat << "EOF"
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                   STAGING ENVIRONMENT CONFIGURATION                        ║
+║                   STAGING ENVIRONMENT CONFIGURATION                       ║
 ║                                                                           ║
-║               Preparation of the development environment                   ║
+║               Preparation of the development environment                  ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 EOF
 echo -e "${NC}"
@@ -439,15 +455,15 @@ clear
 echo -e "${BLUE}"
 cat << "EOF"
 ╔═══════════════════════════════════════════════════════════════════════════╗
-║                   PRODUCTION ENVIRONMENT CONFIGURATION                     ║
+║                   PRODUCTION ENVIRONMENT CONFIGURATION                    ║
 ║                                                                           ║
-║                Preparation of the production environment                   ║
+║                Preparation of the production environment                  ║
 ╚═══════════════════════════════════════════════════════════════════════════╝
 EOF
 echo -e "${NC}"
 
-create_env_file "./srcs/prod/odoo/.env" "Production" "./srcs/prod/odoo/Dockerfile"
-configure_odoo "./srcs/prod/odoo/odoo.conf" "Production" "db_production" "8070" "$DB_USER" "$DB_PASSWORD" "$DB_NAME"
+create_env_file "./srcs/production/odoo/.env" "Production" "./srcs/production/odoo/Dockerfile"
+configure_odoo "./srcs/production/odoo/odoo.conf" "Production" "db_production" "8070" "$DB_USER" "$DB_PASSWORD" "$DB_NAME"
 configure_ssl "Production"  # Aggiungi questa linea
 
 # Deploy degli ambienti
@@ -500,7 +516,7 @@ EOF
     echo -e "      • Database User   : ${DB_USER}"
     
     echo -e "\n${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║                  PRODUCTION ENVIRONMENT                         ║${NC}"
+    echo -e "${BLUE}║                  PRODUCTION ENVIRONMENT                        ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo -e "   📌 Access Information:"
     echo -e "      • URL          : http://localhost:80 | https://localhost:443"

@@ -62,12 +62,12 @@ services:
   odoo_production:
     container_name: odoo_production
     build:
-      context: ./srcs/prod/odoo
+      context: ./srcs/production/odoo
       dockerfile: Dockerfile
       args:
         ODOO_VERSION: 18.0 # Usato dal .env relativo
     env_file:
-      - ./srcs/prod/odoo/.env
+      - ./srcs/production/odoo/.env
     volumes:
       - odoo-data_prod_filestore:/var/lib/odoo
       - odoo-data_prod_config:/etc/odoo
@@ -98,7 +98,7 @@ services:
   nginx_production:
     container_name: nginx_production
     build:
-      context: ./srcs/prod/nginx
+      context: ./srcs/production/nginx
       dockerfile: Dockerfile
     ports:
       - "80:80" # Porta per reverse proxy senza SSL

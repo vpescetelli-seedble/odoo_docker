@@ -7,13 +7,13 @@ setup_script := setup.sh
 # Percorsi per i volumi
 odoo_prod_data := ./addons/production/extra-addons
 odoo_staging_data := ./addons/staging/extra-addons
-db_prod_data := ./data/db/prod
+db_prod_data := ./data/db/production
 db_staging_data := ./data/db/staging
 
 .PHONY: all up down clean create-folders start stop restart init setup install-requirements
 
 # Target principale
-init: create-folders install-requirements setup
+init: create-folders setup
 
 # Target per il setup
 setup:
@@ -98,10 +98,37 @@ enable-ssl-staging:
 	@docker-compose exec -e USE_LETS_ENCRYPT=true nginx_staging /init-ssl.sh
 
 # Abilita Let's Encrypt per production
-enable-ssl-prod:
+enable-ssl-production:
 	@docker-compose exec -e USE_LETS_ENCRYPT=true nginx_production /init-ssl.sh
 
 # Rinnova certificati Let's Encrypt
 renew-ssl:
 	@docker-compose exec nginx_staging certbot renew
 	@docker-compose exec nginx_production certbot renew
+
+# Reset delle configurazioni
+reset:
+	@echo "Resetting configuration files..."
+	@if [ -f "$(docker_compose_file).backup" ]; then \
+		mv $(docker_compose_file).backup $(docker_compose_file); \
+		echo "✓ Docker Compose file restored"; \
+	else \
+		echo "✗ No Docker Compose backup file found"; \
+	fi
+	@if [ -f "./srcs/staging/nginx/default.conf.backup" ]; then \
+		mv ./srcs/staging/nginx/default.conf.backup ./srcs/staging/nginx/default.conf; \
+		echo "✓ Staging Nginx configuration restored"; \
+	fi
+	@if [ -f "./srcs/prod/nginx/default.conf.backup" ]; then \
+		mv ./srcs/prod/nginx/default.conf.backup ./srcs/prod/nginx/default.conf; \
+		echo "✓ Production Nginx configuration restored"; \
+	fi
+	@if [ -f "./srcs/staging/odoo/odoo.conf.backup" ]; then \
+		mv ./srcs/staging/odoo/odoo.conf.backup ./srcs/staging/odoo/odoo.conf; \
+		echo "✓ Staging Odoo configuration restored"; \
+	fi
+	@if [ -f "./srcs/prod/odoo/odoo.conf.backup" ]; then \
+		mv ./srcs/prod/odoo/odoo.conf.backup ./srcs/prod/odoo/odoo.conf; \
+		echo "✓ Production Odoo configuration restored"; \
+	fi
+	@echo "Reset completed!"
